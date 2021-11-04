@@ -39,7 +39,7 @@ def check_mythical(handler_input):
     # type: (HandlerInput) -> bool
     is_mythical_creature = False
     resolved_value = get_resolved_value(
-    handler_input.request_envelope.request, 'pet')
+        handler_input.request_envelope.request, 'pet')
     if resolved_value is not None and resolved_value == 'mythical_creatures':
         is_mythical_creature = True
         handler_input.attributes_manager.session_attributes['mythical_creature']
@@ -59,7 +59,7 @@ def mythical_creatures_intent(handler_input):
 
 
 @sb.request_handler(can_handle_func=lambda input: is_intent_name('PetMatchIntent')(input)
-    and input.request_envelope.request.dialog_state != DialogState.COMPLETED)
+                    and input.request_envelope.request.dialog_state != DialogState.COMPLETED)
 def in_progress_pet_match_intent(handler_input):
     # type: (HandlerInput) -> Response
     logger.info('in InProgressPetMatchIntent')
@@ -69,13 +69,14 @@ def in_progress_pet_match_intent(handler_input):
     for slot_name, current_slot in six.iteritems(current_intent.slots):
         if slot_name not in ['article', 'at_the', 'I want']:
             if current_slot.confirmation_status != SlotConfirmationStatus.CONFIRMED \
-                and current_slot.resolutions \
-                and current_slot.resolutions.resolutions_per_authority[0]:
+                    and current_slot.resolutions \
+                    and current_slot.resolutions.resolutions_per_authority[0]:
                 if current_slot.resolutions.resolutions_per_authority[0].status_code == StatusCode.ER_SUCCESS_MATCH:
                     if len(current_slot.resolutions.resolutions_per_authority[0].values) > 1:
                         prompt = 'Which would you like '
 
-                        values = ' or '.join([e.value.name for e in current_slot.resolutions.resolutions_per_authority[0].values])
+                        values = ' or '.join(
+                            [e.value.name for e in current_slot.resolutions.resolutions_per_authority[0].values])
                         prompt += values + ' ?'
                         return handler_input.response_builder.speak(
                             prompt).ask(prompt).add_directive(
@@ -97,7 +98,7 @@ def in_progress_pet_match_intent(handler_input):
 
 
 @sb.request_handler(can_handle_func=lambda input: is_intent_name('CompletedPetMatchIntent')(input)
-    and input.request_envelope.request.dialog_state == DialogState.COMPLETED)
+                    and input.request_envelope.request.dialog_state == DialogState.COMPLETED)
 def completed_pet_match_intent(handler_input):
     logger.info('in CompletedPetMatchIntent')
     filled_slots = handler_input.request_envelope.request.intent.slots
@@ -114,20 +115,20 @@ def completed_pet_match_intent(handler_input):
                       "{} "
                       "energy dog sounds good for you. Consider a "
                       "{}".format(
-                slot_values["size"]["resolved"],
-                slot_values["temperament"]["resolved"],
-                slot_values["energy"]["resolved"],
-                response["result"][0]["breed"])
-            )
+                          slot_values["size"]["resolved"],
+                          slot_values["temperament"]["resolved"],
+                          slot_values["energy"]["resolved"],
+                          response["result"][0]["breed"])
+                      )
         else:
             speech = ("I am sorry I could not find a match for a "
                       "{} "
                       "{} "
                       "{} energy dog".format(
-                slot_values["size"]["resolved"],
-                slot_values["temperament"]["resolved"],
-                slot_values["energy"]["resolved"])
-            )
+                          slot_values["size"]["resolved"],
+                          slot_values["temperament"]["resolved"],
+                          slot_values["energy"]["resolved"])
+                      )
     except Exception as e:
         speech = ("I am really sorry. I am unable to access part of my "
                   "memory. Please try again later")
@@ -147,8 +148,8 @@ def help_intent_handler(handler_input):
     return handler_input.response_builder.response
 
 
-@sb.request_handler(can_handle_func=lambda input : is_intent_name('AMAZON.CancelIntent')(input)
-    or is_intent_name('AMAZON.StopIntent')(input))
+@sb.request_handler(can_handle_func=lambda input: is_intent_name('AMAZON.CancelIntent')(input)
+                    or is_intent_name('AMAZON.StopIntent')(input))
 def cancel_and_stop_intent_handler(handler_input):
     logger.info('in ExitIntentHandler')
     handler_input.response_builder.speak('Bye').set_should_end_session(True)
@@ -223,9 +224,11 @@ def get_resolved_value(request, slot_name):
         return (request.intent.slots[slot_name].resolutions.
                 resolutions_per_authority[0].values[0].value.name)
     except (AttributeError, ValueError, KeyError, IndexError, TypeError) as e:
-        logger.info("Couldn't resolve {} for request: {}".format(slot_name, request))
+        logger.info("Couldn't resolve {} for request: {}".format(
+            slot_name, request))
         logger.info(str(e))
         return None
+
 
 def get_slot_values(filled_slots):
     """Return slot values with additional info."""
@@ -253,7 +256,8 @@ def get_slot_values(filled_slots):
             else:
                 pass
         except (AttributeError, ValueError, KeyError, IndexError, TypeError) as e:
-            logger.info("Couldn't resolve status_code for slot item: {}".format(slot_item))
+            logger.info(
+                "Couldn't resolve status_code for slot item: {}".format(slot_item))
             logger.info(e)
             slot_values[name] = {
                 "synonym": slot_item.value,
@@ -262,10 +266,12 @@ def get_slot_values(filled_slots):
             }
     return slot_values
 
+
 def random_phrase(str_list):
     """Return random element from list."""
     # type: List[str] -> str
     return random.choice(str_list)
+
 
 def build_pet_match_options(host_name, path, port, slot_values):
     """Return options for HTTP Get call."""
@@ -283,6 +289,7 @@ def build_pet_match_options(host_name, path, port, slot_values):
         "url": url,
         "path_params": path_params
     }
+
 
 def http_get(http_options):
     url = http_options["url"]
